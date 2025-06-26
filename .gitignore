@@ -1,0 +1,12 @@
+# Ignore development files
+serve.py
+*.pyc
+__pycache__/
+.DS_Store
+.env
+node_modules/
+*.log
+
+# Keep deployment and documentation files
+!README.md
+!DEPLOYMENT.md

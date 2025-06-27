@@ -224,16 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Parallax effect for hero section
-window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const parallax = document.querySelector('.hero');
-    const speed = scrolled * 0.5;
-    
-    if (parallax) {
-        parallax.style.transform = `translateY(${speed}px)`;
-    }
-});
+// Note: Parallax effect removed to prevent content overlap issues
 
 // Google Scholar citation fetching (mock implementation)
 // Note: Due to CORS restrictions, this would need to be implemented server-side

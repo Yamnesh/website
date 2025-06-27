@@ -94,7 +94,7 @@ if (contactForm) {
         const message = formData.get('message');
         
         // Create mailto link
-        const mailtoLink = `mailto:yamnesh@pitt.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+        const mailtoLink = `mailto:yaa53@pitt.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
             `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
         )}`;
         
@@ -241,15 +241,15 @@ window.addEventListener('scroll', () => {
 function updateCitationStats() {
     // Mock data - in a real implementation, this would fetch from Google Scholar API
     const mockStats = {
-        citations: '50+',
-        hIndex: '4',
-        i10Index: '2'
+        publications: '9',
+        citations: '80+',
+        hIndex: '5'
     };
     
     // Animate counters
+    animateCounter('publicationCount', mockStats.publications);
     animateCounter('citationCount', mockStats.citations);
     animateCounter('hIndex', mockStats.hIndex);
-    animateCounter('i10Index', mockStats.i10Index);
 }
 
 function animateCounter(elementId, finalValue) {

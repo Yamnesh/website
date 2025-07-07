@@ -3,10 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Effect of Collagen Fiber Tortuosity Distribution - Yamnesh Agrawal</title>
+    <title>Collagen Fiber Tortuosity - Yamnesh Agrawal</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- VTK.js for 3D visualization -->
+    <script src="https://unpkg.com/vtk.js"></script>
+    
+    <style>
+        .model-viewer {
+            width: 100%;
+            height: 500px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .model-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255,255,255,1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 5;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .error-message i {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .model-info {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .model-info {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 10;
+        }
+        
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 5;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -54,9 +177,11 @@
             <div class="paper-content">
                 <div class="paper-section">
                     <h2>Abstract</h2>
-                    <p>This study investigates the effect of collagen fiber tortuosity distribution on the mechanical response of arterial tissues. Collagen fibers are the primary load-bearing components in arterial walls, and their geometric configuration significantly influences the mechanical behavior under physiological loading conditions. We developed a computational framework to analyze how variations in fiber tortuosity affect the overall mechanical properties of arterial tissues.</p>
+                    <p>This study investigated the effect of collagen fiber tortuosity distribution on the biomechanical failure and prefailure properties of arterial wall tissue. An in-silico model of the arterial wall was developed using data obtained from combined multiphoton microscopy imaging and uni-axial tensile testing.</p>
                     
-                    <p>The research employs advanced modeling techniques to characterize the relationship between fiber microstructure and macroscopic mechanical response. Our findings demonstrate that collagen fiber tortuosity distribution plays a crucial role in determining the nonlinear stress-strain behavior of arterial tissues, with implications for understanding cardiovascular disease progression and treatment strategies.</p>
+                    <p>Layer-dependent properties were prescribed for collagen, elastin, and ground substance. Collagen fibers were modeled as discrete anisotropic elements, while elastin and ground substance were modeled as homogeneous isotropic components. Our parametric analysis, using a finite element approach, revealed that different parameters of collagen fibers tortuosity distribution significantly influence both prefailure and failure biomechanical properties.</p>
+                    
+                    <p>Increased fiber tortuosity improved the tissue strength whereas the dispersion in the tortuosity distribution reduced it. This study provides novel insights into the structural-mechanical interdependencies in arterial walls, offering potential targets for clinical assessments and therapeutic interventions aimed at mitigating rupture risks.</p>
                 </div>
 
                 <div class="paper-section">
@@ -67,6 +192,39 @@
                         <li>The developed computational model provides insights into tissue mechanics</li>
                         <li>Results have implications for cardiovascular disease research</li>
                     </ul>
+                </div>
+
+                <div class="paper-section">
+                    <h2>Interactive 3D Model</h2>
+                    <p>Explore the 3D computational model of arterial tissue with collagen fiber tortuosity distribution. You can rotate, zoom, and interact with the model to better understand the fiber architecture and its influence on mechanical behavior.</p>
+                    
+                    <div class="model-viewer" id="vtkContainer">
+                        <div class="model-controls">
+                            <button class="control-btn" onclick="resetView()">
+                                <i class="fas fa-home"></i> Reset View
+                            </button>
+                            <button class="control-btn" onclick="toggleWireframe()">
+                                <i class="fas fa-cube"></i> Wireframe
+                            </button>
+                            <button class="control-btn" onclick="toggleFibers()">
+                                <i class="fas fa-layer-group"></i> Show Fibers
+                            </button>
+                        </div>
+                        
+                        <div class="loading-indicator" id="loadingIndicator">
+                            <div class="spinner"></div>
+                            <p>Loading 3D Model...</p>
+                        </div>
+                        
+                        <div class="model-info">
+                            <strong>Interactive Controls:</strong><br>
+                            • Left click + drag: Rotate<br>
+                            • Right click + drag: Pan<br>
+                            • Mouse wheel: Zoom
+                        </div>
+                    </div>
+                    
+                    <p><em>Note: This interactive model demonstrates the computational framework used to study collagen fiber tortuosity effects. The visualization shows the complex 3D fiber network structure that influences the mechanical properties of arterial tissues.</em></p>
                 </div>
 
                 <div class="paper-section">
@@ -104,6 +262,22 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 3D Model Viewer Section -->
+                <div class="paper-section">
+                    <h2>Interactive 3D Model</h2>
+                    <div class="model-viewer" id="modelViewer"></div>
+                    <div class="model-controls">
+                        <button class="control-btn" id="rotateX">Rotate X</button>
+                        <button class="control-btn" id="rotateY">Rotate Y</button>
+                        <button class="control-btn" id="resetView">Reset View</button>
+                    </div>
+                    <div class="model-info" id="modelInfo">Collagen Fiber Tortuosity Model</div>
+                    <div class="loading-indicator" id="loadingIndicator">
+                        <div class="spinner"></div>
+                        <div>Loading Model...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -124,5 +298,226 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // VTK.js 3D Model Viewer Implementation
+        let renderWindow, renderer, renderWindowInteractor;
+        let currentActor = null;
+        let wireframeMode = false;
+        let fibersVisible = true;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeVTKViewer();
+        });
+
+        function initializeVTKViewer() {
+            const container = document.getElementById('vtkContainer');
+            if (!container) return;
+
+            // Create VTK render window
+            renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
+            renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
+            renderWindow.addRenderer(renderer);
+
+            // Create render window interactor
+            renderWindowInteractor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+            renderWindowInteractor.setRenderWindow(renderWindow);
+            renderWindowInteractor.initialize();
+            renderWindowInteractor.bindEvents(container);
+
+            // Set up the renderer
+            renderer.setBackground(0.95, 0.95, 0.95);
+            
+            // Add the render window to the container
+            container.appendChild(renderWindow.getContainer());
+            
+            // Resize the render window to fit the container
+            renderWindow.getContainer().style.width = '100%';
+            renderWindow.getContainer().style.height = '100%';
+            
+            // Load the actual RVE stress model
+            loadRVEModel();
+        }
+
+        function loadRVEModel() {
+            // Try to load the RVE stress VTK file
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'RVE_stress.vtk', true);
+            xhr.responseType = 'arraybuffer';
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const arrayBuffer = xhr.response;
+                        
+                        // Since this is an unstructured grid, we need to use the correct reader
+                        const reader = vtk.IO.Legacy.vtkDataSetReader.newInstance();
+                        reader.parseAsArrayBuffer(arrayBuffer);
+                        
+                        // Create mapper and actor
+                        const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
+                        mapper.setInputConnection(reader.getOutputPort());
+                        
+                        const actor = vtk.Rendering.Core.vtkActor.newInstance();
+                        actor.setMapper(mapper);
+                        
+                        // Set material properties for stress visualization
+                        const property = actor.getProperty();
+                        property.setColor(0.7, 0.8, 0.9); // Light blue color
+                        property.setOpacity(0.9);
+                        property.setSpecular(0.3);
+                        property.setSpecularPower(30);
+                        
+                        // Add the actor to the renderer
+                        renderer.addActor(actor);
+                        currentActor = actor;
+                        
+                        // Reset camera to fit the model
+                        renderer.resetCamera();
+                        renderWindow.render();
+                        
+                        // Hide loading indicator
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                        
+                    } catch (error) {
+                        console.error('Error parsing VTK file:', error);
+                        loadFallbackModel();
+                    }
+                } else {
+                    console.error('Failed to load VTK file');
+                    loadFallbackModel();
+                }
+            };
+            
+            xhr.onerror = function() {
+                console.error('Network error loading VTK file');
+                loadFallbackModel();
+            };
+            
+            xhr.send();
+        }
+
+        function loadFallbackModel() {
+            // Show error message and load demo geometry
+            document.getElementById('loadingIndicator').innerHTML = 
+                '<div class="error-message"><i class="fas fa-exclamation-triangle"></i><br>Error loading 3D model<br><small>Loading demo geometry instead</small></div>';
+            
+            setTimeout(function() {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                createDemoGeometry();
+            }, 2000);
+        }
+
+        function createDemoGeometry() {
+            // Create a demo arterial tissue model with fiber structure
+            const source = vtk.Filters.Sources.vtkCylinderSource.newInstance({
+                height: 2.0,
+                radius: 1.0,
+                resolution: 20
+            });
+
+            const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
+            mapper.setInputConnection(source.getOutputPort());
+
+            const actor = vtk.Rendering.Core.vtkActor.newInstance();
+            actor.setMapper(mapper);
+            
+            // Set material properties
+            const property = actor.getProperty();
+            property.setColor(0.8, 0.6, 0.6); // Tissue-like color
+            property.setOpacity(0.8);
+            property.setSpecular(0.3);
+            property.setSpecularPower(30);
+
+            renderer.addActor(actor);
+            currentActor = actor;
+
+            // Add fiber lines
+            addFiberLines();
+
+            renderer.resetCamera();
+            renderWindow.render();
+        }
+
+        function addFiberLines() {
+            // Create fiber-like lines to simulate collagen fibers
+            const numFibers = 20;
+            for (let i = 0; i < numFibers; i++) {
+                const points = vtk.Common.DataModel.vtkPoints.newInstance();
+                const lines = vtk.Common.DataModel.vtkCellArray.newInstance();
+                
+                // Create a tortuous fiber path
+                const numPoints = 20;
+                for (let j = 0; j < numPoints; j++) {
+                    const t = j / (numPoints - 1);
+                    const angle = i * Math.PI * 2 / numFibers;
+                    const tortuosity = 0.1 * Math.sin(t * Math.PI * 4);
+                    
+                    const x = (0.8 + tortuosity) * Math.cos(angle + t * 0.5);
+                    const y = (0.8 + tortuosity) * Math.sin(angle + t * 0.5);
+                    const z = -1 + 2 * t;
+                    
+                    points.insertNextPoint(x, y, z);
+                }
+                
+                // Create line connectivity
+                for (let j = 0; j < numPoints - 1; j++) {
+                    const line = [j, j + 1];
+                    lines.insertNextCell(line);
+                }
+                
+                // Create polydata for the fiber
+                const polyData = vtk.Common.DataModel.vtkPolyData.newInstance();
+                polyData.setPoints(points);
+                polyData.setLines(lines);
+                
+                const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
+                mapper.setInputData(polyData);
+                
+                const actor = vtk.Rendering.Core.vtkActor.newInstance();
+                actor.setMapper(mapper);
+                
+                const property = actor.getProperty();
+                property.setColor(0.2, 0.4, 0.8); // Blue fiber color
+                property.setLineWidth(2);
+                
+                renderer.addActor(actor);
+            }
+        }
+
+        // Control functions
+        function resetView() {
+            if (renderer) {
+                renderer.resetCamera();
+                renderWindow.render();
+            }
+        }
+
+        function toggleWireframe() {
+            if (currentActor) {
+                const property = currentActor.getProperty();
+                wireframeMode = !wireframeMode;
+                property.setRepresentation(wireframeMode ? 1 : 2); // 1 = wireframe, 2 = surface
+                renderWindow.render();
+            }
+        }
+
+        function toggleFibers() {
+            fibersVisible = !fibersVisible;
+            const actors = renderer.getActors();
+            actors.forEach(function(actor, index) {
+                if (index > 0) { // Skip the main tissue actor
+                    actor.setVisibility(fibersVisible);
+                }
+            });
+            renderWindow.render();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (renderWindow) {
+                renderWindow.resize();
+            }
+        });
+    </script>
 </body>
 </html>

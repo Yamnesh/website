@@ -1,5 +1,6 @@
 # Ignore development files
 serve.py
+/photos/*
 *.pyc
 __pycache__/
 .DS_Store

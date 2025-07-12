@@ -87,6 +87,13 @@
             height: auto;
             max-width: 100%;
             border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        
+        .result-gif:hover {
+            opacity: 0.9 !important;
+            transform: scale(1.02);
         }
         
         .result-caption {
@@ -230,6 +237,7 @@ media, and adventitia). Fiber and matrix composition are also layer specific.</p
                 <div class="paper-section">
                     <h2>Results</h2>
                     <p>The computational analysis revealed significant insights into how collagen fiber tortuosity affects the mechanical behavior of arterial tissues. The following animations demonstrate the stress-strain relationships and stress distributions observed in our simulations.</p>
+                    <p><em>Note: Click any animation to restart all animations simultaneously for better comparison.</em></p>
                     
                     <div class="results-grid">
                         <div class="result-item">
@@ -247,7 +255,7 @@ media, and adventitia). Fiber and matrix composition are also layer specific.</p
                                 <img src="TortuosityFigures/MatrixStress_animation.gif" alt="Matrix Stress Animation" class="result-gif">
                             </div>
                             <div class="result-caption">
-                                <h4>Matrix Stress Distribution</h4>
+                                <h4>Matrix Stress Evolution</h4>
                                 <p>Animation showing the evolution of stress patterns in the matrix component of arterial tissue during mechanical loading, demonstrating how tortuosity affects stress transfer mechanisms.</p>
                             </div>
                         </div>
@@ -257,7 +265,7 @@ media, and adventitia). Fiber and matrix composition are also layer specific.</p
                                 <img src="TortuosityFigures/FiberStress_animation.gif" alt="Fiber Stress Animation" class="result-gif">
                             </div>
                             <div class="result-caption">
-                                <h4>Fiber Stress Distribution</h4>
+                                <h4>Fiber Stress Evolution</h4>
                                 <p>Visualization of stress development in collagen fibers with varying tortuosity, illustrating the relationship between fiber geometry and mechanical response.</p>
                             </div>
                         </div>
@@ -328,5 +336,53 @@ media, and adventitia). Fiber and matrix composition are also layer specific.</p
     </footer>
 
     <script src="../script.js"></script>
+    
+    <script>
+        // Advanced GIF synchronization using preloading and canvas
+        document.addEventListener('DOMContentLoaded', function() {
+            const gifContainers = document.querySelectorAll('.gif-container');
+            const gifElements = document.querySelectorAll('.result-gif');
+            let allGifsLoaded = false;
+            
+            // Store original sources
+            const originalSources = Array.from(gifElements).map(gif => gif.src);
+            
+            // Create placeholder images while loading
+            gifElements.forEach((gif, index) => {
+                gif.style.opacity = '0.5';
+                gif.setAttribute('data-original-src', gif.src);
+                // Use a static placeholder or keep the first frame
+                gif.src = gif.src + '?t=' + Date.now();
+            });
+            
+            function synchronizeGifs() {
+                const timestamp = Date.now();
+                gifElements.forEach((gif, index) => {
+                    gif.style.opacity = '0';
+                    // Force reload with timestamp to restart animation
+                    gif.src = originalSources[index] + '?sync=' + timestamp;
+                });
+                
+                // Fade in all gifs simultaneously after a brief delay
+                setTimeout(() => {
+                    gifElements.forEach(gif => {
+                        gif.style.opacity = '1';
+                    });
+                }, 50);
+            }
+            
+            // Initial synchronization after a delay to ensure page is ready
+            setTimeout(synchronizeGifs, 500);
+            
+            // Add click handlers for manual sync
+            gifElements.forEach(gif => {
+                gif.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    synchronizeGifs();
+                });
+            });
+            
+        });
+    </script>
 </body>
 </html>
